@@ -1,7 +1,7 @@
 {
-  "name": "coca",
+  "name": "@coca/structure",
   "version": "1.0.0",
-  "description": "The cloud virtual bluter",
+  "description": "Robust boilerplate for working with nodeffi and Rust. +Babel, Docker, Flow, eslint",
   "main": "dist/bundle.js",
   "scripts": {
     "preinstall": "sh scripts/preinstall.sh",
