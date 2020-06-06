@@ -1,3 +1,8 @@
+Features: 
+* Binds rust snake_case to camelCase
+* Watch JS and Rust files at same time
+* Bundle via Rollup
+
 getting started:
 
 run in docker:
