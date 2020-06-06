@@ -1,7 +1,7 @@
 {
   "name": "@coca/structure",
   "version": "1.0.0",
-  "description": "Robust boilerplate for working with nodeffi and Rust. +Babel, Docker, Flow, eslint",
+  "description": "Robust boilerplate for working with nodeffi and Rust. +Babel, Docker, Flow, eslint & CircleCI",
   "main": "dist/bundle.js",
   "scripts": {
     "preinstall": "sh scripts/preinstall.sh",
