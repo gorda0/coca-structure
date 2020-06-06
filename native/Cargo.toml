@@ -1,0 +1,9 @@
+[package]
+name = "native"
+version = "0.1.0"
+authors = ["Douglas Guimarães <douglasrodriguesguima@gmail.com>"]
+edition = "2018"
+
+[lib]
+crate_type = ["dylib"]
+[dependencies]

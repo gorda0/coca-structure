@@ -1,0 +1,3 @@
+[options]
+module.name_mapper='@types' -> '<PROJECT_ROOT>/src/types'
+module.name_mapper='@nLib' -> '<PROJECT_ROOT>/src/nLib'

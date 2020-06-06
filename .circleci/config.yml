@@ -1,0 +1,130 @@
+version: 2.1
+
+main_branches: &main_branches
+  filters:
+    branches:
+      only:
+        - master
+        - dev
+dev_branch: &dev_branch
+  filters:
+    branches:
+      only:
+        - dev
+prod_branch: &prod_branch
+  filters:
+    branches:
+      only:
+        - master
+commands:
+  setup-branch-env:
+    description: Setup branch env var
+    steps:
+      - run:
+          name: Setup Environment Variables
+          command: |
+            echo "export GIT_SHA1=$CIRCLE_SHA1" >> $BASH_ENV
+            source $BASH_ENV
+  setup-static-address:
+    description: Setup an external static address
+    steps:
+      - run:
+          name: Create Static Address
+          command: gcloud compute addresses create $GOOGLE_PROJECT_ID-$CIRCLE_BRANCH-service  --global --ip-version IPV4 || export EXTERNAL_IP_EXISTS=true
+      - run:
+          name: Setup Static Address ENV
+          command: export EXTERNAL_STATIC_IP=$(gcloud compute addresses describe $GOOGLE_PROJECT_ID-$CIRCLE_BRANCH-service --global | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
+  build-app-bundle:
+    description: Build app bundle
+    steps:
+      - run:
+          name: Build app bundle
+          command: npm run build
+  install-packages:
+    description: Install app dependencies
+    steps:
+      - run:
+          name: Install npm packages
+          command: npm i
+  deploy:
+    description: Update compute engine image
+    steps:
+      - gcr/gcr-auth
+      - gcp-cli/install
+      - setup-branch-env
+      - run:
+          name: Update Compute Engine Image
+          command: gcloud compute instances update-container $INSTANCE_NAME-$CIRCLE_BRANCH --zone $GOOGLE_COMPUTE_ZONE --container-image=gcr.io/$GOOGLE_PROJECT_ID/$IMAGE_NAME-$CIRCLE_BRANCH:$GIT_SHA1
+orbs:
+  gcp-cli: circleci/gcp-cli@1.8.4
+  gcr: circleci/gcp-gcr@0.0.2
+jobs:
+  test:
+    description: test project
+    docker:
+      - image: hayd/debian-deno:1.0.2
+    steps:
+      - checkout
+      - run:
+          name: Test project
+          command: deno --unstable --allow-net tests/test.js
+  build-and-push-docker-image:
+    description: Build and push image to Google Container Registry
+    machine: true
+    steps:
+      - checkout
+      - gcr/gcr-auth
+      - setup-branch-env
+      - gcr/build-image:
+          image: $IMAGE_NAME-$CIRCLE_BRANCH
+          tag: $GIT_SHA1
+      - gcr/push-image:
+          image: $IMAGE_NAME-$CIRCLE_BRANCH
+          tag: $GIT_SHA1
+  create-instance:
+    machine: true
+    description: Create a VM instance
+    steps:
+      - gcr/gcr-auth
+      - gcp-cli/install
+      - setup-branch-env
+      - setup-static-address
+      - run:
+          name: Create VM Instance or skip
+          command: gcloud beta compute instances create-with-container $INSTANCE_NAME-$CIRCLE_BRANCH --container-image gcr.io/$GOOGLE_PROJECT_ID/$IMAGE_NAME-$CIRCLE_BRANCH:$GIT_SHA1 --address=$EXTERNAL_STATIC_IP --tags=$GOOGLE_PROJECT_ID-$CIRCLE_BRANCH-service || export VM_ALREADY_EXISTS=true
+      - run:
+          name: Create Firewall Rule or skip
+          command: gcloud compute firewall-rules create $GOOGLE_PROJECT_ID-$CIRCLE_BRANCH-allow-http --allow tcp:8080 --target-tags $GOOGLE_PROJECT_ID-$CIRCLE_BRANCH-service || gcloud compute firewall-rules update $GOOGLE_PROJECT_ID-$CIRCLE_BRANCH-allow-http --target-tags $GOOGLE_PROJECT_ID-$CIRCLE_BRANCH-service || export RULE_ALREADY_EXISTS=true
+  deploy-dev:
+    description: Restart Google Compute Engine DEV
+    machine: true
+    steps:
+      - deploy
+  deploy-prod:
+    description: Restart Google Compute Engine PROD
+    machine: true
+    steps:
+      - deploy
+workflows:
+  build_update_deploy:
+    jobs:
+      - build-and-push-docker-image:
+          <<: *main_branches
+      - create-instance:
+          <<: *main_branches
+          requires:
+            - build-and-push-docker-image
+      - deploy-dev:
+          <<: *dev_branch
+          requires:
+            - create-instance
+      - autorize-deploy-prod:
+          <<: *prod_branch
+          type: approval
+          description: Ask for approval
+          requires:
+            - create-instance
+      - deploy-prod:
+          <<: *prod_branch
+          requires:
+            - autorize-deploy-prod

@@ -1,0 +1,8 @@
+rust/target
+.DS_Store
+.credentials/*
+.env
+node_modules
+dist/build
+native/target
+#native/Cargo.lock
