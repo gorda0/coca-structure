@@ -21,18 +21,18 @@ commands:
     description: Build
     steps:
       - run:
-          name: Rust install
-          command: apt-get update; apt-get install curl && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y && source $HOME/.cargo/env || CARGO_ERROR = true
+          name: Install project dependencies
+          command: apt-get update; apt install curl libffi6 libffi-dev build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev curl libbz2-dev -y
       - run:
           name: Npm install
-          command: npm i
+          command: npm i --unsafe-perm && echo "export PATH=~/.cargo/bin:$PATH" >> $BASH_ENV
       - run:
           name: Build bundle
           command: npm run build
 jobs:
   bundle:
     docker:
-      - image: node:buster-slim
+      - image: nikolaik/python-nodejs:python3.5-nodejs10
     description: Build project bundle
     steps:
       - checkout
@@ -40,15 +40,15 @@ jobs:
   test:
     description: test project
     docker:
-      - image: node:buster-slim
+      - image: nikolaik/python-nodejs:python3.5-nodejs10
     steps:
       - checkout
       - build
       - run:
           name: Test project
-          command: npm run tests
+          command: npm run test
 workflows:
-  build_update_deploy:
+  build_and_test:
     jobs:
       - bundle:
           <<: *main_branches
