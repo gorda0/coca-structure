@@ -22,6 +22,12 @@ local development(enable watchers):
 
 It'll execute the watchexec bin for watching js and rust files.
 
+running tests:
+```sh
+    npm i
+    npm run test
+```
+
 Using debian based distribution? Run the following commands in case of running errors on npm i
 
 ```sh
