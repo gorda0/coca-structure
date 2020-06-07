@@ -22,7 +22,7 @@ commands:
     steps:
       - run:
           name: Rust install
-          command: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y && source $HOME/.cargo/env || CARGO_ERROR = true
+          command: apt-get update; apt-get install curl && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y && source $HOME/.cargo/env || CARGO_ERROR = true
       - run:
           name: Npm install
           command: npm i
