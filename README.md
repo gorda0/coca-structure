@@ -1,9 +1,15 @@
+[![CircleCI](https://circleci.com/gh/gorda0/coca-structure/tree/master.svg?style=svg)](https://circleci.com/gh/gorda0/coca-structure/tree/master)
+
 Features:
 
 - Binds rust snake_case to camelCase
 - Watch JS and Rust files at same time
 - Bundle via Rollup
-- Babel/flow aliases
+
+* Binds rust snake_case to camelCase
+* Watch JS and Rust files at same time
+* Bundle via Rollup
+* Babel/flow aliases
 
 # **getting started**:
 
@@ -21,6 +27,13 @@ Features:
 ```
 
 It'll execute the watchexec bin for watching js and rust files.
+
+**running tests**:
+
+```sh
+    npm i
+    npm run test
+```
 
 _Using debian based distribution? Run the following commands in case of running errors on npm i_
 
