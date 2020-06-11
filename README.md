@@ -1,11 +1,6 @@
 [![CircleCI](https://circleci.com/gh/gorda0/coca-structure/tree/master.svg?style=svg)](https://circleci.com/gh/gorda0/coca-structure/tree/master)
 
 Features:
-
-- Binds rust snake_case to camelCase
-- Watch JS and Rust files at same time
-- Bundle via Rollup
-
 * Binds rust snake_case to camelCase
 * Watch JS and Rust files at same time
 * Bundle via Rollup
